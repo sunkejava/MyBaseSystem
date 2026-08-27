@@ -3,6 +3,7 @@
     <ProjectReference Include="../MyBaseSystem.Application/MyBaseSystem.Application.csproj" />
     <ProjectReference Include="../MyBaseSystem.Infrastructure/MyBaseSystem.Infrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
 </Project>
