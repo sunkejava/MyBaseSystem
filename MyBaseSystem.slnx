@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/src/MyBaseSystem.Domain/MyBaseSystem.Domain.csproj" />
+    <Project Path="backend/src/MyBaseSystem.Application/MyBaseSystem.Application.csproj" />
+    <Project Path="backend/src/MyBaseSystem.Infrastructure/MyBaseSystem.Infrastructure.csproj" />
+    <Project Path="backend/src/MyBaseSystem.Api/MyBaseSystem.Api.csproj" />
+    <Project Path="backend/tests/MyBaseSystem.Tests/MyBaseSystem.Tests.csproj" />
+  </Folder>
+</Solution>

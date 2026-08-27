@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+</script>
+
+<template>
+  <div>
+    <h1 class="text-3xl font-bold">
+      {{ t('settings.dataOverview') }}
+    </h1>
+    <p class="text-muted-foreground">
+      {{ t('settings.dataOverviewDesc') }}
+    </p>
+  </div>
+</template>

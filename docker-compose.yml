@@ -1,0 +1,10 @@
+services:
+  api:
+    build: { context: ., dockerfile: backend/src/MyBaseSystem.Api/Dockerfile }
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: ${MYBASESYSTEM_JWT_KEY:?set MYBASESYSTEM_JWT_KEY}
+    volumes: [ "mybase-data:/app/data" ]
+    ports: [ "5080:8080" ]
+volumes:
+  mybase-data:
