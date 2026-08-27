@@ -10,8 +10,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: '10.0.x' }
       - run: dotnet restore MyBaseSystem.slnx
+        working-directory: backend
       - run: dotnet build MyBaseSystem.slnx --no-restore -c Release
+        working-directory: backend
       - run: dotnet test MyBaseSystem.slnx --no-build -c Release
+        working-directory: backend
   frontend:
     runs-on: ubuntu-latest
     steps:
@@ -21,4 +24,6 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
+        working-directory: frontend
       - run: pnpm build
+        working-directory: frontend
