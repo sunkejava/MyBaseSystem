@@ -28,7 +28,7 @@ flowchart LR
 - `MyBaseSystem.Api`：控制器、中间件、认证授权和 OpenAPI；控制器只调用 Application 用例。
 - `MyBaseSystem.Tests`：领域规则和后续应用/集成测试。
 
-前端保留 TabTab UI 的五种布局、主题、国际化、标签页、全局搜索、组件库与 pnpm workspace 结构。业务应用位于 `apps/admin`，通用组件位于 `packages/ui`。
+前端保留 TabTab UI 的五种布局、主题、国际化、标签页、全局搜索、组件库与 pnpm workspace 结构。全部前端代码位于 `frontend/`，其中业务应用位于 `frontend/apps/admin`，通用组件位于 `frontend/packages/ui`；全部 .NET 代码、解决方案和测试位于 `backend/`。
 
 ## API 规范
 
@@ -66,6 +66,7 @@ dotnet run --project backend/src/MyBaseSystem.Api --urls http://localhost:5080
 
 # 前端（另一个终端）
 corepack enable
+cd frontend
 pnpm install --frozen-lockfile
 pnpm dev:admin
 ```
@@ -75,10 +76,10 @@ pnpm dev:admin
 完整构建：
 
 ```bash
-dotnet restore MyBaseSystem.slnx
-dotnet build MyBaseSystem.slnx -c Release
-dotnet test MyBaseSystem.slnx -c Release
-pnpm build
+dotnet restore backend/MyBaseSystem.slnx
+dotnet build backend/MyBaseSystem.slnx -c Release
+dotnet test backend/MyBaseSystem.slnx -c Release
+pnpm --dir frontend build
 ```
 
 Docker 启动：
