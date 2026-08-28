@@ -1,18 +1,9 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
-const { t } = useI18n()
-defineOptions({ name: 'SecurityAccount' })
+import { onMounted,reactive,ref } from 'vue'
+import { authApi,systemApi,type UserProfile } from '@/api/client'
+import { Button,Card,CardContent,CardDescription,CardHeader,CardTitle,Input } from '@tabtab/ui'
+const profile=ref<UserProfile>(),message=ref(''),error=ref(''),form=reactive({currentPassword:'',newPassword:'',confirmPassword:''})
+onMounted(async()=>{try{profile.value=await authApi.me()}catch(e){error.value=e instanceof Error?e.message:'加载失败'}})
+async function save(){error.value='';message.value='';if(form.newPassword!==form.confirmPassword){error.value='两次输入的新密码不一致';return}try{await systemApi.changePassword(form.currentPassword,form.newPassword);Object.assign(form,{currentPassword:'',newPassword:'',confirmPassword:''});message.value='密码修改成功'}catch(e){error.value=e instanceof Error?e.message:'修改失败'}}
 </script>
-
-<template>
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-3xl font-bold">{{ t('settings.accountSecurity') }}</h1>
-      <p class="text-muted-foreground">{{ t('settings.accountSecurityDesc') }}</p>
-    </div>
-    <div class="text-center text-muted-foreground py-12">
-      {{ t('settings.accountSecurityPage') }}
-    </div>
-  </div>
-</template>
+<template><div class="space-y-5"><div><h1 class="text-3xl font-bold">账号安全</h1><p class="text-muted-foreground">查看当前账号并安全修改登录密码</p></div><div class="grid gap-5 lg:grid-cols-2"><Card><CardHeader><CardTitle>账号信息</CardTitle><CardDescription>信息来自当前登录令牌与服务端用户资料</CardDescription></CardHeader><CardContent class="space-y-3"><div><p class="text-sm text-muted-foreground">用户名</p><p class="font-medium">{{profile?.userName||'-'}}</p></div><div><p class="text-sm text-muted-foreground">显示名称</p><p class="font-medium">{{profile?.displayName||'-'}}</p></div><div><p class="text-sm text-muted-foreground">邮箱</p><p class="font-medium">{{profile?.email||'-'}}</p></div><div><p class="text-sm text-muted-foreground">角色</p><p>{{profile?.roles.join('、')||'-'}}</p></div></CardContent></Card><Card><CardHeader><CardTitle>修改密码</CardTitle><CardDescription>新密码至少 8 位，修改后建议重新登录</CardDescription></CardHeader><CardContent><form class="space-y-3" @submit.prevent="save"><Input v-model="form.currentPassword" required type="password" placeholder="当前密码"/><Input v-model="form.newPassword" required minlength="8" type="password" placeholder="新密码"/><Input v-model="form.confirmPassword" required minlength="8" type="password" placeholder="确认新密码"/><p v-if="error" class="text-sm text-destructive">{{error}}</p><p v-if="message" class="text-sm text-emerald-600">{{message}}</p><Button type="submit">保存新密码</Button></form></CardContent></Card></div></div></template>

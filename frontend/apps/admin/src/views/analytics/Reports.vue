@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
-const { t } = useI18n()
+import { computed,onMounted,ref } from 'vue'
+import { Badge,Button,Card,CardContent,Input,Table,TableBody,TableCell,TableEmpty,TableHead,TableHeader,TableRow } from '@tabtab/ui'
+import { Download,Search } from 'lucide-vue-next'
+import { systemApi,type AuditLog } from '@/api/client'
+const rows=ref<AuditLog[]>([]),keyword=ref(''),total=ref(0),error=ref('')
+const filtered=computed(()=>rows.value.filter(x=>!keyword.value||`${x.userName}${x.path}${x.method}`.toLowerCase().includes(keyword.value.toLowerCase())))
+async function load(){try{const data=await systemApi.auditLogs(1,100);rows.value=data.items;total.value=data.total}catch(e){error.value=e instanceof Error?e.message:'加载失败'}}
+function exportCsv(){const body=['用户,方法,路径,状态,耗时,IP,时间',...filtered.value.map(x=>[x.userName,x.method,x.path,x.statusCode,x.elapsedMilliseconds,x.ipAddress??'',x.createdAt].map(v=>`"${String(v).replaceAll('"','""')}"`).join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+body],{type:'text/csv'}));a.download='audit-logs.csv';a.click();URL.revokeObjectURL(a.href)}
+onMounted(load)
 </script>
-
-<template>
-  <div>
-    <h1 class="text-3xl font-bold">
-      {{ t('settings.reportCenter') }}
-    </h1>
-    <p class="text-muted-foreground">
-      {{ t('settings.reportCenterDesc') }}
-    </p>
-  </div>
-</template>
+<template><div class="space-y-5"><div class="flex items-center justify-between"><div><h1 class="text-3xl font-bold">审计报表</h1><p class="text-muted-foreground">查询并导出真实 API 操作日志，共 {{total}} 条</p></div><Button variant="outline" @click="exportCsv"><Download class="mr-2 h-4 w-4"/>导出 CSV</Button></div><Card><CardContent class="flex gap-2 pt-6"><Input v-model="keyword" class="max-w-md" placeholder="用户、方法或请求路径"/><Button><Search class="mr-2 h-4 w-4"/>查询</Button></CardContent></Card><p v-if="error" class="text-destructive">{{error}}</p><Card><CardContent class="p-0"><Table><TableHeader><TableRow><TableHead>用户</TableHead><TableHead>请求</TableHead><TableHead>状态</TableHead><TableHead>耗时</TableHead><TableHead>IP</TableHead><TableHead>时间</TableHead></TableRow></TableHeader><TableBody><TableRow v-for="row in filtered" :key="row.id"><TableCell>{{row.userName}}</TableCell><TableCell><Badge variant="outline">{{row.method}}</Badge> <span class="ml-2 font-mono text-xs">{{row.path}}</span></TableCell><TableCell>{{row.statusCode}}</TableCell><TableCell>{{row.elapsedMilliseconds}} ms</TableCell><TableCell>{{row.ipAddress||'-'}}</TableCell><TableCell>{{new Date(row.createdAt).toLocaleString()}}</TableCell></TableRow><TableEmpty v-if="!filtered.length" :colspan="6">暂无数据</TableEmpty></TableBody></Table></CardContent></Card></div></template>

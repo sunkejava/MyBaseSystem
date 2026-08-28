@@ -6,12 +6,14 @@ namespace MyBaseSystem.Infrastructure;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    // 业务聚合对应的 DbSet。新增实体时需同步配置索引、软删除过滤器和种子升级逻辑。
     public DbSet<User> Users => Set<User>(); public DbSet<Role> Roles => Set<Role>();
     public DbSet<Permission> Permissions => Set<Permission>(); public DbSet<Menu> Menus => Set<Menu>();
     public DbSet<Department> Departments => Set<Department>(); public DbSet<DictionaryType> DictionaryTypes => Set<DictionaryType>();
     public DbSet<DictionaryItem> DictionaryItems => Set<DictionaryItem>(); public DbSet<SystemSetting> SystemSettings => Set<SystemSetting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>(); public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<LoginLog> LoginLogs => Set<LoginLog>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -37,6 +39,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         b.Entity<Department>().HasIndex(x => x.Code).IsUnique().HasFilter("\"IsDeleted\" = 0"); b.Entity<DictionaryType>().HasIndex(x => x.Code).IsUnique();
         b.Entity<SystemSetting>().HasIndex(x => x.Key).IsUnique(); b.Entity<RefreshToken>().HasIndex(x => x.TokenHash).IsUnique();
         b.Entity<Menu>().HasIndex(x => x.Path).IsUnique().HasFilter("\"IsDeleted\" = 0");
+        b.Entity<Notification>().HasIndex(x => new { x.UserId, x.IsRead, x.CreatedAt });
         b.Entity<UserRole>().HasKey(x => new { x.UserId, x.RoleId });
         b.Entity<RolePermission>().HasKey(x => new { x.RoleId, x.PermissionId });
         b.Entity<UserRole>().HasOne(x => x.User).WithMany(x => x.UserRoles).HasForeignKey(x => x.UserId);

@@ -11,14 +11,27 @@ public sealed record LoginRequest(string Account, string Password, bool Remember
 public sealed record RefreshRequest(string RefreshToken);
 public sealed record TokenResponse(string AccessToken, string RefreshToken, DateTimeOffset ExpiresAt, UserProfile User);
 public sealed record UserProfile(Guid Id, string UserName, string DisplayName, string Email, string? Avatar, string[] Roles, string[] Permissions);
-public sealed record UserListItem(Guid Id, string UserName, string DisplayName, string Email, string? Phone, bool IsEnabled, string[] Roles, DateTimeOffset CreatedAt);
+/// <summary>用户列表及详情统一返回模型。</summary>
+public sealed record UserListItem(Guid Id, string UserName, string DisplayName, string Email, string? Phone, bool IsEnabled, Guid? DepartmentId, string? DepartmentName, Guid[] RoleIds, string[] Roles, DateTimeOffset CreatedAt, DateTimeOffset? LastLoginAt);
 public sealed record SaveUserRequest(string UserName, string DisplayName, string Email, string? Phone, string? Password, bool IsEnabled, Guid? DepartmentId, Guid[] RoleIds);
+/// <summary>当前用户修改登录密码。</summary>
+public sealed record ChangePasswordRequest(string CurrentPassword,string NewPassword);
 public sealed record RoleDto(Guid Id, string Code, string Name, string? Description, bool IsSystem, bool IsEnabled, string[] Permissions);
 public sealed record SaveRoleRequest(string Code, string Name, string? Description, bool IsEnabled, string[] Permissions);
 public sealed record MenuDto(Guid Id, Guid? ParentId, string Name, string Path, string? Component, string? Icon, string? PermissionCode, int Sort, string Type, bool Hidden, bool IsEnabled, List<MenuDto> Children);
 public sealed record SaveMenuRequest(Guid? ParentId, string Name, string Path, string? Component, string? Icon, string? PermissionCode, int Sort, string Type, bool Hidden, bool IsEnabled);
 public sealed record DepartmentDto(Guid Id, Guid? ParentId, string Code, string Name, int Sort, bool IsEnabled, int UserCount, List<DepartmentDto> Children);
 public sealed record SaveDepartmentRequest(Guid? ParentId, string Code, string Name, int Sort, bool IsEnabled);
+/// <summary>系统运行概览。</summary>
+public sealed record DashboardSummary(long UserCount,long EnabledUserCount,long RoleCount,long DepartmentCount,long TodayLoginCount,long TodayRequestCount,long UnreadNotificationCount);
+/// <summary>站内通知。</summary>
+public sealed record NotificationDto(Guid Id,string Title,string Message,string Type,bool IsRead,string? ActionUrl,DateTimeOffset CreatedAt);
+/// <summary>创建站内通知。</summary>
+public sealed record CreateNotificationRequest(string Title,string Message,string Type,string? ActionUrl,Guid? UserId);
+/// <summary>系统设置项。</summary>
+public sealed record SettingDto(string Key,string Value,string Group,string? Description,bool IsPublic);
+/// <summary>保存系统设置。</summary>
+public sealed record SaveSettingRequest(string Value,string Group,string? Description,bool IsPublic);
 
 public interface ICurrentUser { Guid? Id { get; } string Name { get; } bool HasPermission(string code); }
 public interface ITokenService { Task<TokenResponse?> LoginAsync(LoginRequest request, string? ip, string? userAgent, CancellationToken ct); Task<TokenResponse?> RefreshAsync(string token, CancellationToken ct); Task RevokeAsync(string token, CancellationToken ct); }

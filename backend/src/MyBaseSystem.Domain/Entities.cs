@@ -128,5 +128,16 @@ public sealed class LoginLog : Entity
     public string? UserAgent { get; set; }
 }
 
+/// <summary>用户站内通知，支持已读状态和业务跳转。</summary>
+public sealed class Notification : Entity
+{
+    public Guid? UserId { get; set; }
+    public required string Title { get; set; }
+    public required string Message { get; set; }
+    public string Type { get; set; } = "info";
+    public bool IsRead { get; set; }
+    public string? ActionUrl { get; set; }
+}
+
 public sealed class UserRole { public Guid UserId { get; set; } public User User { get; set; } = null!; public Guid RoleId { get; set; } public Role Role { get; set; } = null!; }
 public sealed class RolePermission { public Guid RoleId { get; set; } public Role Role { get; set; } = null!; public Guid PermissionId { get; set; } public Permission Permission { get; set; } = null!; }

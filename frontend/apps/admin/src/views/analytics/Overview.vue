@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
-const { t } = useI18n()
+import { onMounted,ref } from 'vue'
+import { Badge,Card,CardContent,CardHeader,CardTitle,Table,TableBody,TableCell,TableEmpty,TableHead,TableHeader,TableRow } from '@tabtab/ui'
+import { Activity,Building2,LogIn,Shield,Users } from 'lucide-vue-next'
+import { systemApi,type AuditLog,type DashboardSummary } from '@/api/client'
+const summary=ref<DashboardSummary>(),logs=ref<AuditLog[]>([]),error=ref('')
+const cards=[['用户总数','userCount',Users],['启用用户','enabledUserCount',Activity],['角色数量','roleCount',Shield],['组织机构','departmentCount',Building2],['今日登录','todayLoginCount',LogIn],['今日请求','todayRequestCount',Activity]] as const
+onMounted(async()=>{try{const [s,l]=await Promise.all([systemApi.summary(),systemApi.auditLogs(1,10)]);summary.value=s;logs.value=l.items}catch(e){error.value=e instanceof Error?e.message:'加载失败'}})
 </script>
-
-<template>
-  <div>
-    <h1 class="text-3xl font-bold">
-      {{ t('settings.dataOverview') }}
-    </h1>
-    <p class="text-muted-foreground">
-      {{ t('settings.dataOverviewDesc') }}
-    </p>
-  </div>
-</template>
+<template><div class="space-y-5"><div><h1 class="text-3xl font-bold">数据概览</h1><p class="text-muted-foreground">来自系统数据库的实时人员、权限和请求统计</p></div><p v-if="error" class="text-destructive">{{error}}</p><div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"><Card v-for="[title,key,Icon] in cards" :key="key"><CardHeader class="flex-row items-center justify-between pb-2"><CardTitle class="text-sm font-medium">{{title}}</CardTitle><component :is="Icon" class="h-4 w-4 text-muted-foreground"/></CardHeader><CardContent><div class="text-3xl font-bold">{{summary?.[key]??'-'}}</div></CardContent></Card></div><Card><CardHeader><CardTitle>最近请求</CardTitle></CardHeader><CardContent class="p-0"><Table><TableHeader><TableRow><TableHead>用户</TableHead><TableHead>方法</TableHead><TableHead>路径</TableHead><TableHead>状态</TableHead><TableHead>耗时</TableHead><TableHead>时间</TableHead></TableRow></TableHeader><TableBody><TableRow v-for="row in logs" :key="row.id"><TableCell>{{row.userName}}</TableCell><TableCell><Badge variant="outline">{{row.method}}</Badge></TableCell><TableCell class="font-mono text-xs">{{row.path}}</TableCell><TableCell>{{row.statusCode}}</TableCell><TableCell>{{row.elapsedMilliseconds}} ms</TableCell><TableCell>{{new Date(row.createdAt).toLocaleString()}}</TableCell></TableRow><TableEmpty v-if="!logs.length" :colspan="6">暂无请求记录</TableEmpty></TableBody></Table></CardContent></Card></div></template>

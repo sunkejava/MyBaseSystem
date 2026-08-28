@@ -1,0 +1,35 @@
+@baseUrl = http://localhost:5000/api/v1
+@token = replace-with-access-token
+
+### 登录并获取访问令牌
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{"account":"admin","password":"replace-with-initial-password","rememberMe":false}
+
+### 仪表盘真实统计
+GET {{baseUrl}}/dashboard/summary
+Authorization: Bearer {{token}}
+
+### 查询当前用户通知
+GET {{baseUrl}}/notifications
+Authorization: Bearer {{token}}
+
+### 查询菜单管理树
+GET {{baseUrl}}/menu-management
+Authorization: Bearer {{token}}
+
+### 查询组织机构树
+GET {{baseUrl}}/departments
+Authorization: Bearer {{token}}
+
+### 查询审计日志
+GET {{baseUrl}}/audit-logs?page=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### 修改当前用户密码
+PUT {{baseUrl}}/users/me/password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"currentPassword":"replace-current-password","newPassword":"replace-new-password"}

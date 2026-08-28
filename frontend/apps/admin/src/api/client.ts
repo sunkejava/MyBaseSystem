@@ -2,10 +2,15 @@ export interface ApiResult<T> { success: boolean; data: T; message: string; code
 export interface UserProfile { id: string; userName: string; displayName: string; email: string; avatar?: string; roles: string[]; permissions: string[] }
 export interface TokenResponse { accessToken: string; refreshToken: string; expiresAt: string; user: UserProfile }
 export interface PagedResult<T> { items: T[]; total: number; page: number; pageSize: number }
-export interface UserListItem { id: string; userName: string; displayName: string; email: string; phone?: string; isEnabled: boolean; roles: string[]; createdAt: string }
+export interface UserListItem { id:string; userName:string; displayName:string; email:string; phone?:string; isEnabled:boolean; departmentId?:string; departmentName?:string; roleIds:string[]; roles:string[]; createdAt:string; lastLoginAt?:string }
 export interface Role { id: string; code: string; name: string; description?: string; isSystem: boolean; isEnabled: boolean; permissions: string[] }
 export interface Menu { id:string; parentId?:string; name:string; path:string; component?:string; icon?:string; permissionCode?:string; sort:number; type:string; hidden:boolean; isEnabled:boolean; children:Menu[] }
 export interface Department { id:string; parentId?:string; code:string; name:string; sort:number; isEnabled:boolean; userCount:number; children:Department[] }
+export interface Permission { id:string; code:string; name:string; group:string; description?:string }
+export interface DashboardSummary { userCount:number; enabledUserCount:number; roleCount:number; departmentCount:number; todayLoginCount:number; todayRequestCount:number; unreadNotificationCount:number }
+export interface NotificationItem { id:string; title:string; message:string; type:'info'|'success'|'warning'|'error'|'message'; isRead:boolean; actionUrl?:string; createdAt:string }
+export interface AuditLog { id:string; userName:string; method:string; path:string; statusCode:number; elapsedMilliseconds:number; ipAddress?:string; createdAt:string }
+export interface Setting { key:string; value:string; group:string; description?:string; isPublic:boolean }
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 let refreshing: Promise<string | null> | null = null
@@ -40,9 +45,12 @@ export const authApi = {
 export const systemApi = {
   users: (keyword = '', page = 1, pageSize = 20) => api<PagedResult<UserListItem>>(`/users?keyword=${encodeURIComponent(keyword)}&page=${page}&pageSize=${pageSize}`),
   createUser: (value: object) => api<string>('/users', { method: 'POST', body: JSON.stringify(value) }),
+  updateUser: (id:string,value:object) => api<object>(`/users/${id}`, { method:'PUT',body:JSON.stringify(value) }),
   deleteUser: (id: string) => api<object>(`/users/${id}`, { method: 'DELETE' }),
+  changePassword:(currentPassword:string,newPassword:string)=>api<object>('/users/me/password',{method:'PUT',body:JSON.stringify({currentPassword,newPassword})}),
   roles: () => api<Role[]>('/roles'),
   createRole: (value: object) => api<string>('/roles', { method: 'POST', body: JSON.stringify(value) }),
+  updateRole: (id:string,value:object) => api<object>(`/roles/${id}`, { method:'PUT',body:JSON.stringify(value) }),
   deleteRole: (id: string) => api<object>(`/roles/${id}`, { method: 'DELETE' }),
   menus: () => api<Menu[]>('/menu-management'),
   createMenu: (value: object) => api<string>('/menu-management', { method: 'POST', body: JSON.stringify(value) }),
@@ -52,4 +60,14 @@ export const systemApi = {
   createDepartment: (value:object) => api<string>('/departments', { method:'POST', body:JSON.stringify(value) }),
   updateDepartment: (id:string,value:object) => api<object>(`/departments/${id}`, { method:'PUT', body:JSON.stringify(value) }),
   deleteDepartment: (id:string) => api<object>(`/departments/${id}`, { method:'DELETE' }),
+  permissions:()=>api<Permission[]>('/permissions'),
+  summary:()=>api<DashboardSummary>('/dashboard/summary'),
+  auditLogs:(page=1,pageSize=20)=>api<PagedResult<AuditLog>>(`/audit-logs?page=${page}&pageSize=${pageSize}`),
+  notifications:()=>api<NotificationItem[]>('/notifications'),
+  createNotification:(value:object)=>api<string>('/notifications',{method:'POST',body:JSON.stringify(value)}),
+  markNotificationRead:(id:string)=>api<object>(`/notifications/${id}/read`,{method:'PUT'}),
+  markAllNotificationsRead:()=>api<object>('/notifications/read-all',{method:'PUT'}),
+  deleteNotification:(id:string)=>api<object>(`/notifications/${id}`,{method:'DELETE'}),
+  settings:()=>api<Setting[]>('/settings'),
+  saveSetting:(key:string,value:object)=>api<object>(`/settings/${encodeURIComponent(key)}`,{method:'PUT',body:JSON.stringify(value)}),
 }

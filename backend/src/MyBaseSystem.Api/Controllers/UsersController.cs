@@ -24,4 +24,7 @@ public sealed class UsersController(IUserApplicationService service) : Controlle
     }
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<ApiResult<object>>> Delete(Guid id, CancellationToken ct) { await service.DeleteAsync(id,ct); return ApiResult<object>.Ok(new{}); }
+    /// <summary>修改当前登录用户密码。</summary>
+    [HttpPut("me/password")]
+    public async Task<ActionResult<ApiResult<object>>> ChangePassword(ChangePasswordRequest request,CancellationToken ct){await service.ChangePasswordAsync(Guid.Parse(User.FindFirst("sub")!.Value),request,ct);return ApiResult<object>.Ok(new{});}
 }

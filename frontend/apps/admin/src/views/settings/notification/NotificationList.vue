@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Bell,
@@ -23,6 +23,7 @@ defineOptions({ name: 'NotificationList' })
 
 const { t } = useI18n()
 const notificationStore = useNotificationStore()
+onMounted(()=>notificationStore.load())
 
 /**
  * 通知类型配置
