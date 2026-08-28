@@ -4,6 +4,8 @@ export interface TokenResponse { accessToken: string; refreshToken: string; expi
 export interface PagedResult<T> { items: T[]; total: number; page: number; pageSize: number }
 export interface UserListItem { id: string; userName: string; displayName: string; email: string; phone?: string; isEnabled: boolean; roles: string[]; createdAt: string }
 export interface Role { id: string; code: string; name: string; description?: string; isSystem: boolean; isEnabled: boolean; permissions: string[] }
+export interface Menu { id:string; parentId?:string; name:string; path:string; component?:string; icon?:string; permissionCode?:string; sort:number; type:string; hidden:boolean; isEnabled:boolean; children:Menu[] }
+export interface Department { id:string; parentId?:string; code:string; name:string; sort:number; isEnabled:boolean; userCount:number; children:Department[] }
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 let refreshing: Promise<string | null> | null = null
@@ -42,4 +44,12 @@ export const systemApi = {
   roles: () => api<Role[]>('/roles'),
   createRole: (value: object) => api<string>('/roles', { method: 'POST', body: JSON.stringify(value) }),
   deleteRole: (id: string) => api<object>(`/roles/${id}`, { method: 'DELETE' }),
+  menus: () => api<Menu[]>('/menu-management'),
+  createMenu: (value: object) => api<string>('/menu-management', { method: 'POST', body: JSON.stringify(value) }),
+  updateMenu: (id:string,value:object) => api<object>(`/menu-management/${id}`, { method: 'PUT', body: JSON.stringify(value) }),
+  deleteMenu: (id:string) => api<object>(`/menu-management/${id}`, { method: 'DELETE' }),
+  departments: () => api<Department[]>('/departments'),
+  createDepartment: (value:object) => api<string>('/departments', { method:'POST', body:JSON.stringify(value) }),
+  updateDepartment: (id:string,value:object) => api<object>(`/departments/${id}`, { method:'PUT', body:JSON.stringify(value) }),
+  deleteDepartment: (id:string) => api<object>(`/departments/${id}`, { method:'DELETE' }),
 }

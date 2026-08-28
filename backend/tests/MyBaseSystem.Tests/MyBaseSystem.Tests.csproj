@@ -1,4 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" /><PackageReference Include="xunit" /><PackageReference Include="xunit.runner.visualstudio" /><PackageReference Include="FluentAssertions" /></ItemGroup>
-  <ItemGroup><ProjectReference Include="../../src/MyBaseSystem.Domain/MyBaseSystem.Domain.csproj" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="../../src/MyBaseSystem.Domain/MyBaseSystem.Domain.csproj" /><ProjectReference Include="../../src/MyBaseSystem.Infrastructure/MyBaseSystem.Infrastructure.csproj" /></ItemGroup>
 </Project>

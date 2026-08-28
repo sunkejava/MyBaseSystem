@@ -28,3 +28,21 @@ public sealed class EfSystemReadRepository(AppDbContext db) : ISystemReadReposit
     public async Task<(IReadOnlyList<AuditLog>,long)> ListAuditLogsAsync(int page,int pageSize,CancellationToken ct){var q=db.AuditLogs.AsNoTracking().OrderByDescending(x=>x.CreatedAt);return(await q.Skip((page-1)*pageSize).Take(pageSize).ToListAsync(ct),await q.LongCountAsync(ct));}
 }
 public sealed class AspNetPasswordService(PasswordHasher<User> hasher) : IPasswordService { public string Hash(User user,string password)=>hasher.HashPassword(user,password); }
+public sealed class EfMenuRepository(AppDbContext db) : IMenuRepository
+{
+    public async Task<IReadOnlyList<Menu>> ListAsync(CancellationToken ct)=>await db.Menus.AsNoTracking().OrderBy(x=>x.Sort).ThenBy(x=>x.Name).ToListAsync(ct);
+    public Task<Menu?> GetAsync(Guid id,CancellationToken ct)=>db.Menus.FirstOrDefaultAsync(x=>x.Id==id,ct);
+    public Task<bool> PathExistsAsync(string path,Guid? exceptId,CancellationToken ct)=>db.Menus.AnyAsync(x=>x.Path==path&&x.Id!=exceptId,ct);
+    public Task<bool> HasChildrenAsync(Guid id,CancellationToken ct)=>db.Menus.AnyAsync(x=>x.ParentId==id,ct);
+    public void Add(Menu menu)=>db.Menus.Add(menu); public async Task SaveChangesAsync(CancellationToken ct)=>await db.SaveChangesAsync(ct);
+}
+public sealed class EfDepartmentRepository(AppDbContext db) : IDepartmentRepository
+{
+    public async Task<IReadOnlyList<Department>> ListAsync(CancellationToken ct)=>await db.Departments.AsNoTracking().OrderBy(x=>x.Sort).ThenBy(x=>x.Name).ToListAsync(ct);
+    public Task<Department?> GetAsync(Guid id,CancellationToken ct)=>db.Departments.FirstOrDefaultAsync(x=>x.Id==id,ct);
+    public Task<bool> CodeExistsAsync(string code,Guid? exceptId,CancellationToken ct)=>db.Departments.AnyAsync(x=>x.Code==code&&x.Id!=exceptId,ct);
+    public Task<bool> HasChildrenAsync(Guid id,CancellationToken ct)=>db.Departments.AnyAsync(x=>x.ParentId==id,ct);
+    public Task<bool> HasUsersAsync(Guid id,CancellationToken ct)=>db.Users.AnyAsync(x=>x.DepartmentId==id,ct);
+    public async Task<IReadOnlyDictionary<Guid,int>> UserCountsAsync(CancellationToken ct)=>await db.Users.Where(x=>x.DepartmentId!=null).GroupBy(x=>x.DepartmentId!.Value).ToDictionaryAsync(x=>x.Key,x=>x.Count(),ct);
+    public void Add(Department department)=>db.Departments.Add(department); public async Task SaveChangesAsync(CancellationToken ct)=>await db.SaveChangesAsync(ct);
+}

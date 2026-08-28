@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyBaseSystem.Domain;
 
 namespace MyBaseSystem.Infrastructure;
@@ -15,12 +16,27 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     protected override void OnModelCreating(ModelBuilder b)
     {
         base.OnModelCreating(b);
+        // SQLite cannot translate ordering/comparison for DateTimeOffset. Persist every
+        // value as UTC ticks (INTEGER), keeping queries server-side and chronologically sortable.
+        var dateTimeOffsetConverter = new ValueConverter<DateTimeOffset, long>(
+            value => value.UtcTicks,
+            value => new DateTimeOffset(value, TimeSpan.Zero));
+        var nullableDateTimeOffsetConverter = new ValueConverter<DateTimeOffset?, long?>(
+            value => value.HasValue ? value.Value.UtcTicks : null,
+            value => value.HasValue ? new DateTimeOffset(value.Value, TimeSpan.Zero) : null);
+        foreach (var entityType in b.Model.GetEntityTypes())
+        foreach (var property in entityType.GetProperties())
+        {
+            if (property.ClrType == typeof(DateTimeOffset)) property.SetValueConverter(dateTimeOffsetConverter);
+            else if (property.ClrType == typeof(DateTimeOffset?)) property.SetValueConverter(nullableDateTimeOffsetConverter);
+        }
         foreach (var type in b.Model.GetEntityTypes().Where(x => typeof(Entity).IsAssignableFrom(x.ClrType)))
             b.Entity(type.ClrType).HasQueryFilter(BuildSoftDeleteFilter(type.ClrType));
         b.Entity<User>().HasIndex(x => x.UserName).IsUnique(); b.Entity<User>().HasIndex(x => x.Email).IsUnique();
         b.Entity<Role>().HasIndex(x => x.Code).IsUnique(); b.Entity<Permission>().HasIndex(x => x.Code).IsUnique();
-        b.Entity<Department>().HasIndex(x => x.Code).IsUnique(); b.Entity<DictionaryType>().HasIndex(x => x.Code).IsUnique();
+        b.Entity<Department>().HasIndex(x => x.Code).IsUnique().HasFilter("\"IsDeleted\" = 0"); b.Entity<DictionaryType>().HasIndex(x => x.Code).IsUnique();
         b.Entity<SystemSetting>().HasIndex(x => x.Key).IsUnique(); b.Entity<RefreshToken>().HasIndex(x => x.TokenHash).IsUnique();
+        b.Entity<Menu>().HasIndex(x => x.Path).IsUnique().HasFilter("\"IsDeleted\" = 0");
         b.Entity<UserRole>().HasKey(x => new { x.UserId, x.RoleId });
         b.Entity<RolePermission>().HasKey(x => new { x.RoleId, x.PermissionId });
         b.Entity<UserRole>().HasOne(x => x.User).WithMany(x => x.UserRoles).HasForeignKey(x => x.UserId);

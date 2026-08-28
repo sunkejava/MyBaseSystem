@@ -16,6 +16,9 @@ public sealed record SaveUserRequest(string UserName, string DisplayName, string
 public sealed record RoleDto(Guid Id, string Code, string Name, string? Description, bool IsSystem, bool IsEnabled, string[] Permissions);
 public sealed record SaveRoleRequest(string Code, string Name, string? Description, bool IsEnabled, string[] Permissions);
 public sealed record MenuDto(Guid Id, Guid? ParentId, string Name, string Path, string? Component, string? Icon, string? PermissionCode, int Sort, string Type, bool Hidden, bool IsEnabled, List<MenuDto> Children);
+public sealed record SaveMenuRequest(Guid? ParentId, string Name, string Path, string? Component, string? Icon, string? PermissionCode, int Sort, string Type, bool Hidden, bool IsEnabled);
+public sealed record DepartmentDto(Guid Id, Guid? ParentId, string Code, string Name, int Sort, bool IsEnabled, int UserCount, List<DepartmentDto> Children);
+public sealed record SaveDepartmentRequest(Guid? ParentId, string Code, string Name, int Sort, bool IsEnabled);
 
 public interface ICurrentUser { Guid? Id { get; } string Name { get; } bool HasPermission(string code); }
 public interface ITokenService { Task<TokenResponse?> LoginAsync(LoginRequest request, string? ip, string? userAgent, CancellationToken ct); Task<TokenResponse?> RefreshAsync(string token, CancellationToken ct); Task RevokeAsync(string token, CancellationToken ct); }
