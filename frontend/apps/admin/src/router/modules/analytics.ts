@@ -70,6 +70,7 @@ const analyticsRoutes: RouteRecordRaw[] = [
               icon: FileSpreadsheet,
               order: 2,
               keepAlive: true,
+              hideInMenu: true,
             },
           },
         ],
